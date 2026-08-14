@@ -11,16 +11,24 @@
     supplier_cost: {{ old('supplier_cost', 0) }},
 
     formatEbay() {
-        let raw = this.ebay_order_number.replace(/[^\d]/g, '');
-        if (raw.length === 12) {
-            this.ebay_order_number = raw.substring(0, 2) + '-' + raw.substring(2, 7) + '-' + raw.substring(7, 12);
+        let raw = (this.ebay_order_number || '').replace(/[^\d]/g, '').substring(0, 12);
+        if (raw.length > 7) {
+            this.ebay_order_number = raw.substring(0, 2) + '-' + raw.substring(2, 7) + '-' + raw.substring(7);
+        } else if (raw.length > 2) {
+            this.ebay_order_number = raw.substring(0, 2) + '-' + raw.substring(2);
+        } else {
+            this.ebay_order_number = raw;
         }
     },
 
     formatAmazon() {
-        let raw = this.amazon_order_number.replace(/[^\d]/g, '');
-        if (raw.length === 17) {
-            this.amazon_order_number = raw.substring(0, 3) + '-' + raw.substring(3, 10) + '-' + raw.substring(10, 17);
+        let raw = (this.amazon_order_number || '').replace(/[^\d]/g, '').substring(0, 17);
+        if (raw.length > 10) {
+            this.amazon_order_number = raw.substring(0, 3) + '-' + raw.substring(3, 10) + '-' + raw.substring(10);
+        } else if (raw.length > 3) {
+            this.amazon_order_number = raw.substring(0, 3) + '-' + raw.substring(3);
+        } else {
+            this.amazon_order_number = raw;
         }
     },
 
@@ -58,7 +66,7 @@
     <!-- Live Financial Formula Preview Box -->
     <div class="bg-gradient-to-r from-blue-950/60 to-indigo-950/60 border border-blue-500/30 p-5 rounded-2xl shadow-xl grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Price</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Price (eBay)</span>
             <p class="text-lg font-extrabold text-white">{{ $currencySymbol }}<span x-text="parseFloat(customer_price || 0).toFixed(2)"></span></p>
         </div>
         <div>
@@ -110,7 +118,7 @@
                 <div>
                     <label for="ebay_order_number" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">eBay Order Number *</label>
                     <input type="text" name="ebay_order_number" id="ebay_order_number" x-model="ebay_order_number" @input="formatEbay()" @blur="formatEbay()"
-                           placeholder="27-14904-69608" required
+                           placeholder="27-14904-69608" required maxlength="14"
                            class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl text-sm font-mono text-white">
                     <span class="text-[10px] text-slate-400 mt-1 block">Pattern: XX-XXXXX-XXXXX (Auto-formats digits)</span>
                     @error('ebay_order_number') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
@@ -128,7 +136,7 @@
 
                 <!-- Customer Price -->
                 <div>
-                    <label for="customer_price" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Customer Price ({{ $currencySymbol }}) *</label>
+                    <label for="customer_price" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Customer Price (eBay) ({{ $currencySymbol }}) *</label>
                     <input type="number" step="0.01" min="0" name="customer_price" id="customer_price" x-model.number="customer_price" required
                            class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl text-sm text-white">
                     @error('customer_price') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
@@ -151,11 +159,11 @@
 
                 <!-- Amazon Order Number -->
                 <div>
-                    <label for="amazon_order_number" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Amazon Order Number *</label>
+                    <label for="amazon_order_number" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Amazon Order Number (Optional)</label>
                     <input type="text" name="amazon_order_number" id="amazon_order_number" x-model="amazon_order_number" @input="formatAmazon()" @blur="formatAmazon()"
-                           placeholder="304-9841814-4365162" required
+                           placeholder="304-9841814-4365162 (Optional)" maxlength="19"
                            class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl text-sm font-mono text-white">
-                    <span class="text-[10px] text-slate-400 mt-1 block">Pattern: XXX-XXXXXXX-XXXXXXX</span>
+                    <span class="text-[10px] text-slate-400 mt-1 block">Pattern: XXX-XXXXXXX-XXXXXXX (Optional)</span>
                     @error('amazon_order_number') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 

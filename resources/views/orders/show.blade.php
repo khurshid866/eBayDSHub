@@ -52,7 +52,7 @@
     <!-- Financial Cards Row -->
     <div class="grid grid-cols-2 sm:grid-cols-6 gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-lg">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Customer Price</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Customer Price (eBay)</span>
             <p class="text-xl font-extrabold text-white mt-1">{{ $currencySymbol }}{{ number_format($order->customer_price, 2) }}</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-lg">

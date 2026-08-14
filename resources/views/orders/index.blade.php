@@ -161,7 +161,7 @@
                         <th class="py-3 px-4">Date</th>
                         <th class="py-3 px-4">eBay Order</th>
                         <th class="py-3 px-4 text-center">Tracking</th>
-                        <th class="py-3 px-4 text-right">Cust. Price</th>
+                        <th class="py-3 px-4 text-right">Customer Price (eBay)</th>
                         <th class="py-3 px-4 text-right">Ad Fee</th>
                         <th class="py-3 px-4">Amazon Order</th>
                         <th class="py-3 px-4 text-right">Amazon Price</th>

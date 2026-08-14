@@ -31,7 +31,11 @@ class StoreOrderRequest extends FormRequest
             'ebay_tracking_number' => ['nullable', 'string', 'max:255'],
             'customer_price' => ['required', 'numeric', 'min:0'],
             'ad_fee_charges' => ['nullable', 'numeric', 'min:0'],
-            'amazon_order_number' => ['required', 'string', 'regex:/^\d{3}-\d{7}-\d{7}$/'],
+            'amazon_order_number' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if (!empty($value) && !preg_match('/^\d{3}-\d{7}-\d{7}$/', $value)) {
+                    $fail('The Amazon order number must be in the format XXX-XXXXXXX-XXXXXXX (e.g. 304-9841814-4365162).');
+                }
+            }],
             'supplier_cost' => ['required', 'numeric', 'min:0'],
             'ebay_net' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', 'string', 'in:Pending,Purchased,Shipped,Delivered,Completed,Cancelled,Refunded'],
