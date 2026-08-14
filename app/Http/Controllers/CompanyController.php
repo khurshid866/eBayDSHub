@@ -23,13 +23,21 @@ class CompanyController extends Controller
         $this->auditLogger = $auditLogger;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorizeSuperAdmin();
+
+        $activeTab = $request->input('tab', 'active');
+
         $companies = Company::withCount(['users', 'orders'])->with(['users' => function($q) {
             $q->where('role', 'CompanyAdmin');
-        }])->orderBy('name')->paginate(15);
-        return view('companies.index', compact('companies'));
+        }])->orderBy('name')->paginate(15, ['*'], 'active_page');
+
+        $deletedCompanies = Company::onlyTrashed()->withCount(['users', 'orders'])->with(['users' => function($q) {
+            $q->withTrashed()->where('role', 'CompanyAdmin');
+        }])->orderByDesc('deleted_at')->paginate(15, ['*'], 'deleted_page');
+
+        return view('companies.index', compact('companies', 'deletedCompanies', 'activeTab'));
     }
 
     public function create()
@@ -120,6 +128,44 @@ class CompanyController extends Controller
         $this->auditLogger->log('updated_company', Company::class, $company->id, $oldValues, $company->toArray());
 
         return redirect()->route('companies.index')->with('success', "Company '{$company->name}' updated successfully.");
+    }
+
+    public function toggleStatus(Company $company)
+    {
+        $this->authorizeSuperAdmin();
+
+        $oldStatus = $company->status;
+        $newStatus = $company->status === 'active' ? 'inactive' : 'active';
+
+        $company->update(['status' => $newStatus]);
+
+        $this->auditLogger->log('toggled_company_status', Company::class, $company->id, ['status' => $oldStatus], ['status' => $newStatus]);
+
+        return redirect()->back()->with('success', "Company '{$company->name}' status updated to " . strtoupper($newStatus) . ".");
+    }
+
+    public function destroy(Company $company)
+    {
+        $this->authorizeSuperAdmin();
+
+        $name = $company->name;
+        $company->delete();
+
+        $this->auditLogger->log('soft_deleted_company', Company::class, $company->id);
+
+        return redirect()->route('companies.index', ['tab' => 'archived'])->with('success', "Company '{$name}' archived / soft deleted successfully.");
+    }
+
+    public function restore($id)
+    {
+        $this->authorizeSuperAdmin();
+
+        $company = Company::onlyTrashed()->findOrFail($id);
+        $company->restore();
+
+        $this->auditLogger->log('restored_company', Company::class, $company->id);
+
+        return redirect()->route('companies.index', ['tab' => 'active'])->with('success', "Company '{$company->name}' restored successfully.");
     }
 
     public function resendCredentials(Company $company)

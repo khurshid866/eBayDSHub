@@ -64,6 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/companies/switch', [CompanyController::class, 'switchCompany'])->name('companies.switch');
     Route::post('/companies/{company}/resend-credentials', [CompanyController::class, 'resendCredentials'])->name('companies.resend-credentials');
     Route::post('/companies/{company}/reset-admin-password', [CompanyController::class, 'resetAdminPassword'])->name('companies.reset_admin_password');
+    Route::post('/companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus'])->name('companies.toggle-status');
+    Route::post('/companies/{id}/restore', [CompanyController::class, 'restore'])->name('companies.restore');
     Route::resource('companies', CompanyController::class);
 
     // Settings Management

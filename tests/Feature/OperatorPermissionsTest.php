@@ -104,4 +104,41 @@ class OperatorPermissionsTest extends TestCase
         $responseUser = $this->actingAs($superAdmin)->post("/users/{$admin->id}/resend-credentials");
         $responseUser->assertRedirect('/users');
     }
+
+    public function test_super_admin_can_soft_delete_restore_and_toggle_company_status(): void
+    {
+        $superAdmin = User::create([
+            'name' => 'Super Admin Actions',
+            'email' => 'superactions_' . uniqid() . '@ebay.com',
+            'password' => bcrypt('password'),
+            'role' => 'SuperAdmin',
+            'status' => 'active',
+        ]);
+
+        $company = Company::create([
+            'name' => 'Action Co',
+            'code' => 'act-co-' . uniqid(),
+            'status' => 'active',
+        ]);
+
+        // 1. Toggle status from active to inactive
+        $this->actingAs($superAdmin)->post("/companies/{$company->id}/toggle-status");
+        $company->refresh();
+        $this->assertEquals('inactive', $company->status);
+
+        // 2. Toggle status back to active
+        $this->actingAs($superAdmin)->post("/companies/{$company->id}/toggle-status");
+        $company->refresh();
+        $this->assertEquals('active', $company->status);
+
+        // 3. Soft Delete / Archive company
+        $responseDel = $this->actingAs($superAdmin)->delete("/companies/{$company->id}");
+        $responseDel->assertRedirect('/companies?tab=archived');
+        $this->assertSoftDeleted('companies', ['id' => $company->id]);
+
+        // 4. Restore company
+        $responseRestore = $this->actingAs($superAdmin)->post("/companies/{$company->id}/restore");
+        $responseRestore->assertRedirect('/companies?tab=active');
+        $this->assertDatabaseHas('companies', ['id' => $company->id, 'deleted_at' => null]);
+    }
 }
