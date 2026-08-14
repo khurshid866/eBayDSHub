@@ -116,11 +116,15 @@ class CompanyController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', Rule::unique('companies')->ignore($company->id)],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('companies')->ignore($company->id)],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'status' => ['required', 'string', 'in:active,inactive'],
         ]);
+
+        if (empty($validated['code'])) {
+            $validated['code'] = $company->code ?: Str::slug($validated['name']);
+        }
 
         $oldValues = $company->toArray();
         $company->update($validated);

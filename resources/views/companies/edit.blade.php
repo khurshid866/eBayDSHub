@@ -27,12 +27,8 @@
                 @error('name') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div>
-                <label for="code" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Unique Code / Slug *</label>
-                <input type="text" name="code" id="code" value="{{ old('code', $company->code) }}" required
-                       class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl text-sm font-mono text-white">
-                @error('code') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
-            </div>
+            <!-- Hidden Code / Slug -->
+            <input type="hidden" name="code" id="code" value="{{ old('code', $company->code) }}">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

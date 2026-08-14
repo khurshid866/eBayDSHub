@@ -54,7 +54,6 @@
                 <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                     <tr>
                         <th class="py-3 px-4">Company Name</th>
-                        <th class="py-3 px-4">Code / Slug</th>
                         <th class="py-3 px-4">Last Admin</th>
                         <th class="py-3 px-4 text-center">Assigned Users</th>
                         <th class="py-3 px-4 text-center">Orders History</th>
@@ -75,7 +74,6 @@
                                 <span class="text-[10px] text-slate-500 font-normal">ID #{{ $company->id }}</span>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">{{ $company->code }}</td>
                         <td class="py-3 px-4 text-slate-300">
                             @if($admin)
                                 <span class="font-bold text-slate-300 block">{{ $admin->name }}</span>
@@ -122,7 +120,6 @@
                 <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
                     <tr>
                         <th class="py-3 px-4">Company Name</th>
-                        <th class="py-3 px-4">Code / Slug</th>
                         <th class="py-3 px-4">Company Admin</th>
                         <th class="py-3 px-4 text-center">Assigned Users</th>
                         <th class="py-3 px-4 text-center">Total Orders</th>
@@ -140,7 +137,6 @@
                             </div>
                             <span>{{ $company->name }}</span>
                         </td>
-                        <td class="py-3 px-4 text-slate-400 font-mono text-[11px]">{{ $company->code }}</td>
                         <td class="py-3 px-4 text-slate-300">
                             @if($admin)
                                 <span class="font-bold text-white block">{{ $admin->name }}</span>
