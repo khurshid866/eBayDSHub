@@ -17,12 +17,22 @@ class CompanyAdminWelcomeMail extends Mailable
     public Company $company;
     public User $user;
     public string $plainPassword;
+    public string $loginUrl;
 
     public function __construct(Company $company, User $user, string $plainPassword)
     {
         $this->company = $company;
         $this->user = $user;
         $this->plainPassword = $plainPassword;
+
+        $baseUrl = config('app.url');
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost')) {
+            $baseUrl = request()->schemeAndHttpHost();
+        }
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost')) {
+            $baseUrl = 'https://ebay.luxconvo.com';
+        }
+        $this->loginUrl = rtrim($baseUrl, '/') . '/login';
     }
 
     public function envelope(): Envelope

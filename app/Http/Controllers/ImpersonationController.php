@@ -42,7 +42,7 @@ class ImpersonationController extends Controller
         $superAdminId = Session::get('original_superadmin_id');
         Session::forget('original_superadmin_id');
 
-        $superAdmin = User::find($superAdminId);
+        $superAdmin = User::withoutGlobalScope('company')->find($superAdminId);
 
         if ($superAdmin) {
             Auth::login($superAdmin);

@@ -94,6 +94,14 @@
                         </td>
                         <td class="py-3 px-4 text-right text-slate-400">{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never' }}</td>
                         <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            <!-- Resend Access Credentials Email Button -->
+                            <form method="POST" action="{{ route('users.resend-credentials', $user) }}" class="inline" onsubmit="return confirm('Resend access credentials email to {{ $user->email }}?');">
+                                @csrf
+                                <button type="submit" class="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition" title="Resend Access Credentials Email to {{ $user->email }}">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+
                             <!-- Super Admin Impersonate / Access Portal Button -->
                             @if(Auth::user()?->isSuperAdmin() && $user->id !== Auth::id())
                             <form method="POST" action="{{ route('impersonate.start', $user) }}" class="inline">

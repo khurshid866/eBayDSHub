@@ -95,7 +95,9 @@ class OrderController extends Controller
     {
         $validated = $request->validated();
         $user = Auth::user();
-        $companyId = $user->company_id ?: Company::first()?->id;
+        $companyId = $user->isSuperAdmin()
+            ? (session('active_company_id') ?: ($user->company_id ?: Company::first()?->id))
+            : $user->company_id;
 
         // Check duplicate eBay order number within company
         $existing = Order::where('company_id', $companyId)
@@ -146,6 +148,8 @@ class OrderController extends Controller
 
     public function update(UpdateOrderRequest $request, Order $order)
     {
+        $this->authorize('update', $order);
+
         $validated = $request->validated();
         $user = Auth::user();
 
@@ -176,6 +180,11 @@ class OrderController extends Controller
         $validated['profit'] = $profit;
         $validated['roi'] = $roi;
         $validated['updated_by'] = $user->id;
+
+        // Never allow modifying company_id on update for non-superadmins
+        if (!$user->isSuperAdmin()) {
+            unset($validated['company_id']);
+        }
 
         $order->update($validated);
 
@@ -211,24 +220,39 @@ class OrderController extends Controller
 
         $action = $request->input('action');
         $orderIds = $request->input('order_ids');
+        $user = Auth::user();
+
+        // Query orders strictly scoped by company for non-SuperAdmins
+        $query = Order::whereIn('id', $orderIds);
+        if (!$user->isSuperAdmin()) {
+            $query->where('company_id', $user->company_id);
+        }
+        $orders = $query->get();
 
         if ($action === 'delete') {
-            $orders = Order::whereIn('id', $orderIds)->get();
+            $deletedCount = 0;
             foreach ($orders as $order) {
-                if (Auth::user()->can('delete', $order)) {
+                if ($user->can('delete', $order)) {
                     $order->delete();
                     $this->auditLogger->log('bulk_deleted_order', Order::class, $order->id);
+                    $deletedCount++;
                 }
             }
-            return redirect()->route('orders.index')->with('success', count($orderIds) . ' order(s) soft-deleted.');
+            return redirect()->route('orders.index')->with('success', $deletedCount . ' order(s) soft-deleted.');
         }
 
         if ($action === 'status_update') {
             $newStatus = $request->input('status');
             if ($newStatus) {
-                Order::whereIn('id', $orderIds)->update(['status' => $newStatus, 'updated_by' => Auth::id()]);
-                $this->auditLogger->log('bulk_updated_status', Order::class, null, null, ['ids' => $orderIds, 'status' => $newStatus]);
-                return redirect()->route('orders.index')->with('success', count($orderIds) . " order(s) updated to status '{$newStatus}'.");
+                $updatedCount = 0;
+                foreach ($orders as $order) {
+                    if ($user->can('update', $order)) {
+                        $order->update(['status' => $newStatus, 'updated_by' => $user->id]);
+                        $this->auditLogger->log('bulk_updated_status', Order::class, $order->id, null, ['status' => $newStatus]);
+                        $updatedCount++;
+                    }
+                }
+                return redirect()->route('orders.index')->with('success', $updatedCount . " order(s) updated to status '{$newStatus}'.");
             }
         }
 

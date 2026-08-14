@@ -25,7 +25,7 @@
         <div class="cred-box">
             <div class="cred-row">
                 <span class="cred-label">Portal URL:</span>
-                <span class="cred-val">{{ url('/login') }}</span>
+                <span class="cred-val">{{ $loginUrl }}</span>
             </div>
             <div class="cred-row">
                 <span class="cred-label">Username/Email:</span>
@@ -39,7 +39,7 @@
 
         <p>You can log into the portal to manage order entries, upload Excel spreadsheets, and view store reports.</p>
 
-        <a href="{{ url('/login') }}" class="btn">Log In to Portal</a>
+        <a href="{{ $loginUrl }}" class="btn">Log In to Portal</a>
 
         <div class="footer">
             This email was sent automatically by the eBay Dropshipping Hub system.

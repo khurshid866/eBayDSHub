@@ -55,9 +55,9 @@ class ReportService
         $lastMonthStart = Carbon::now()->subMonth()->startOfMonth()->toDateString();
         $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth()->toDateString();
 
-        $ordersThisMonth = Order::whereBetween('order_date', [$thisMonthStart, $thisMonthEnd])->count();
-        $profitThisMonth = (float) Order::whereBetween('order_date', [$thisMonthStart, $thisMonthEnd])->sum('profit');
-        $profitLastMonth = (float) Order::whereBetween('order_date', [$lastMonthStart, $lastMonthEnd])->sum('profit');
+        $ordersThisMonth = Order::query()->whereBetween('order_date', [$thisMonthStart, $thisMonthEnd])->count();
+        $profitThisMonth = (float) Order::query()->whereBetween('order_date', [$thisMonthStart, $thisMonthEnd])->sum('profit');
+        $profitLastMonth = (float) Order::query()->whereBetween('order_date', [$lastMonthStart, $lastMonthEnd])->sum('profit');
 
         $momProfitChange = $profitLastMonth > 0
             ? (($profitThisMonth - $profitLastMonth) / $profitLastMonth) * 100

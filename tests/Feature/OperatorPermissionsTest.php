@@ -69,4 +69,39 @@ class OperatorPermissionsTest extends TestCase
         $this->assertEquals('CompanyAdmin', $admin->role);
         $this->assertEquals('Store Admin Renamed', $admin->name);
     }
+
+    public function test_resend_company_admin_and_operator_credentials_email(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $company = Company::create(['name' => 'Mail Test Co', 'code' => 'mail-co-' . uniqid()]);
+
+        $superAdmin = User::create([
+            'name' => 'Super Admin Mail',
+            'email' => 'supermail_' . uniqid() . '@ebay.com',
+            'password' => bcrypt('password'),
+            'role' => 'SuperAdmin',
+            'status' => 'active',
+        ]);
+
+        $admin = User::create([
+            'company_id' => $company->id,
+            'name' => 'Admin Mail Test',
+            'email' => 'adminmail_' . uniqid() . '@ebay.com',
+            'password' => bcrypt('password'),
+            'plain_password' => 'secret123',
+            'role' => 'CompanyAdmin',
+            'status' => 'active',
+        ]);
+
+        $responseCompany = $this->actingAs($superAdmin)->post("/companies/{$company->id}/resend-credentials");
+        $responseCompany->assertRedirect('/companies');
+
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\CompanyAdminWelcomeMail::class, function ($mail) use ($admin) {
+            return $mail->hasTo($admin->email) && str_contains($mail->loginUrl, 'https://ebay.luxconvo.com');
+        });
+
+        $responseUser = $this->actingAs($superAdmin)->post("/users/{$admin->id}/resend-credentials");
+        $responseUser->assertRedirect('/users');
+    }
 }

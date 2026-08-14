@@ -79,15 +79,21 @@ class CompanyController extends Controller
         ]);
 
         // Send email with credentials
+        $mailSent = true;
         try {
             Mail::to($adminUser->email)->send(new CompanyAdminWelcomeMail($company, $adminUser, $plainPassword));
         } catch (\Exception $e) {
-            // Log mail exception if mail server is unconfigured, without breaking creation
+            $mailSent = false;
+            \Illuminate\Support\Facades\Log::error("Failed to send welcome email to company admin {$adminUser->email}: " . $e->getMessage());
         }
 
         $this->auditLogger->log('created_company', Company::class, $company->id, null, $company->toArray());
 
-        return redirect()->route('companies.index')->with('success', "Company '{$company->name}' and Company Admin '{$adminUser->name}' registered successfully. Welcome email sent to {$adminUser->email}.");
+        $msg = $mailSent
+            ? "Company '{$company->name}' and Company Admin '{$adminUser->name}' registered successfully. Welcome email sent to {$adminUser->email}."
+            : "Company '{$company->name}' registered successfully. Could not send email automatically (Mailer log error). You can resend credentials anytime.";
+
+        return redirect()->route('companies.index')->with('success', $msg);
     }
 
     public function edit(Company $company)
@@ -114,6 +120,27 @@ class CompanyController extends Controller
         $this->auditLogger->log('updated_company', Company::class, $company->id, $oldValues, $company->toArray());
 
         return redirect()->route('companies.index')->with('success', "Company '{$company->name}' updated successfully.");
+    }
+
+    public function resendCredentials(Company $company)
+    {
+        $this->authorizeSuperAdmin();
+
+        $admin = $company->users()->where('role', 'CompanyAdmin')->first();
+
+        if (!$admin) {
+            return redirect()->route('companies.index')->with('error', "No Company Admin user found for '{$company->name}'.");
+        }
+
+        $plainPassword = $admin->getPlainPassword();
+
+        try {
+            Mail::to($admin->email)->send(new CompanyAdminWelcomeMail($company, $admin, $plainPassword));
+            return redirect()->route('companies.index')->with('success', "Access credentials email successfully sent to Company Admin '{$admin->email}'.");
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to resend credentials email to {$admin->email}: " . $e->getMessage());
+            return redirect()->route('companies.index')->with('error', "Failed to send email to {$admin->email}: " . $e->getMessage());
+        }
     }
 
     public function resetAdminPassword(Request $request, Company $company)

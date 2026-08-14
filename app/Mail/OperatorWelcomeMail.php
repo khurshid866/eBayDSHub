@@ -15,11 +15,21 @@ class OperatorWelcomeMail extends Mailable
 
     public User $user;
     public string $plainPassword;
+    public string $loginUrl;
 
     public function __construct(User $user, string $plainPassword)
     {
         $this->user = $user;
         $this->plainPassword = $plainPassword;
+
+        $baseUrl = config('app.url');
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost')) {
+            $baseUrl = request()->schemeAndHttpHost();
+        }
+        if (empty($baseUrl) || str_contains($baseUrl, 'localhost')) {
+            $baseUrl = 'https://ebay.luxconvo.com';
+        }
+        $this->loginUrl = rtrim($baseUrl, '/') . '/login';
     }
 
     public function envelope(): Envelope

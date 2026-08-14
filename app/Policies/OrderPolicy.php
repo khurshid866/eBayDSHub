@@ -7,6 +7,15 @@ use App\Models\User;
 
 class OrderPolicy
 {
+    protected function isCompanyAuthorized(User $user, Order $order): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return !empty($user->company_id) && (int)$order->company_id === (int)$user->company_id;
+    }
+
     /**
      * Determine whether the user can view any orders.
      */
@@ -20,7 +29,7 @@ class OrderPolicy
      */
     public function view(User $user, Order $order): bool
     {
-        return $user->isActive() && $user->hasPermission('nav_orders');
+        return $user->isActive() && $user->hasPermission('nav_orders') && $this->isCompanyAuthorized($user, $order);
     }
 
     /**
@@ -36,7 +45,7 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        return $user->isActive() && $user->hasPermission('action_edit_order');
+        return $user->isActive() && $user->hasPermission('action_edit_order') && $this->isCompanyAuthorized($user, $order);
     }
 
     /**
@@ -44,7 +53,7 @@ class OrderPolicy
      */
     public function delete(User $user, Order $order): bool
     {
-        return $user->isActive() && $user->hasPermission('action_delete_order');
+        return $user->isActive() && $user->hasPermission('action_delete_order') && $this->isCompanyAuthorized($user, $order);
     }
 
     /**
@@ -52,7 +61,7 @@ class OrderPolicy
      */
     public function forceDelete(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() && $this->isCompanyAuthorized($user, $order);
     }
 
     /**
@@ -60,6 +69,6 @@ class OrderPolicy
      */
     public function restore(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() && $this->isCompanyAuthorized($user, $order);
     }
 }

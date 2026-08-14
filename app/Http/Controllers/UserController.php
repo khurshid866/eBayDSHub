@@ -218,4 +218,33 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', "User '{$name}' soft deleted successfully. All entry history remains preserved.");
     }
+
+    public function resendCredentials(User $user)
+    {
+        $currentUser = Auth::user();
+
+        if (!$currentUser->isSuperAdmin() && $user->company_id !== $currentUser->company_id) {
+            abort(403, 'Unauthorized access to user from another company.');
+        }
+
+        $plainPassword = $user->getPlainPassword();
+
+        try {
+            if ($user->role === 'Operator') {
+                Mail::to($user->email)->send(new OperatorWelcomeMail($user, $plainPassword));
+            } else {
+                $company = $user->company ?: Company::find($user->company_id);
+                if ($company) {
+                    Mail::to($user->email)->send(new CompanyAdminWelcomeMail($company, $user, $plainPassword));
+                } else {
+                    Mail::to($user->email)->send(new OperatorWelcomeMail($user, $plainPassword));
+                }
+            }
+
+            return redirect()->route('users.index')->with('success', "Access credentials email successfully sent to '{$user->email}'.");
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to resend credentials email to {$user->email}: " . $e->getMessage());
+            return redirect()->route('users.index')->with('error', "Failed to send email to {$user->email}: " . $e->getMessage());
+        }
+    }
 }

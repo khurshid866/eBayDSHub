@@ -59,8 +59,16 @@
                             </span>
                         </td>
                         <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
-                            <!-- Quick Reset Company Admin Password Button -->
                             @if($admin)
+                            <!-- Resend Credentials Email -->
+                            <form method="POST" action="{{ route('companies.resend-credentials', $company) }}" class="inline" onsubmit="return confirm('Resend access credentials email to Company Admin ({{ $admin->email }})?');">
+                                @csrf
+                                <button type="submit" class="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition" title="Resend Credentials Email to {{ $admin->email }}">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+
+                            <!-- Quick Reset Company Admin Password Button -->
                             <button type="button" @click="resetCompanyId = {{ $company->id }}; resetCompanyName = '{{ addslashes($company->name) }}'"
                                     class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition" title="Reset Admin Password for {{ $company->name }}">
                                 <i class="fa-solid fa-key"></i>

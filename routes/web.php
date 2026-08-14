@@ -56,11 +56,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
 
     // User Management
+    Route::post('/users/{user}/resend-credentials', [UserController::class, 'resendCredentials'])->name('users.resend-credentials');
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset_password');
     Route::resource('users', UserController::class);
 
     // Super Admin Company Scoping & Management
     Route::post('/companies/switch', [CompanyController::class, 'switchCompany'])->name('companies.switch');
+    Route::post('/companies/{company}/resend-credentials', [CompanyController::class, 'resendCredentials'])->name('companies.resend-credentials');
     Route::post('/companies/{company}/reset-admin-password', [CompanyController::class, 'resetAdminPassword'])->name('companies.reset_admin_password');
     Route::resource('companies', CompanyController::class);
 

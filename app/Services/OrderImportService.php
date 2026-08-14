@@ -68,12 +68,12 @@ class OrderImportService
         $duplicateInFileCount = 0;
 
         $seenEbayOrders = [];
-        $companyId = Auth::user()?->company_id;
-        $query = Order::query();
-        if ($companyId) {
-            $query->where('company_id', $companyId);
-        }
-        $existingEbayOrders = $query->pluck('ebay_order_number')->toArray();
+        $user = Auth::user();
+        $companyId = $user?->isSuperAdmin()
+            ? (session('active_company_id') ?: ($user?->company_id ?: Company::first()?->id))
+            : $user?->company_id;
+
+        $existingEbayOrders = Order::where('company_id', $companyId)->pluck('ebay_order_number')->toArray();
         $existingMap = array_fill_keys($existingEbayOrders, true);
 
         $lastValidDate = null;
@@ -209,7 +209,9 @@ class OrderImportService
     public function processImport(array $previewData, string $mode, string $originalFilename): ImportBatch
     {
         $user = Auth::user();
-        $companyId = $user->company_id ?: Company::first()?->id;
+        $companyId = $user->isSuperAdmin()
+            ? (session('active_company_id') ?: ($user->company_id ?: Company::first()?->id))
+            : $user->company_id;
 
         $batch = ImportBatch::create([
             'company_id' => $companyId,
